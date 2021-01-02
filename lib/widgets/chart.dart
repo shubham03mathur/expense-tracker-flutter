@@ -16,11 +16,10 @@ class Chart extends StatelessWidget {
       );
 
       double totalAmt = 0.0;
-
       for (var i = 0; i < recentTransactions.length; i++) {
         if (
             // ignore: unrelated_type_equality_checks
-            recentTransactions[i].date.weekday == weekDay &&
+            recentTransactions[i].date.day == weekDay.day &&
                 recentTransactions[i].date.month == weekDay.month &&
                 recentTransactions[i].date.year == weekDay.year) {
           totalAmt += recentTransactions[i].amount;
