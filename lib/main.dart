@@ -8,13 +8,13 @@ import './widgets/chart.dart';
 
 void main() {
   // Lock App to Preferred orientation(s)
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations(
-    [
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ],
-  );
+  // WidgetsFlutterBinding.ensureInitialized();
+  // SystemChrome.setPreferredOrientations(
+  //   [
+  //     DeviceOrientation.portraitUp,
+  //     DeviceOrientation.portraitDown,
+  //   ],
+  // );
   runApp(MyApp());
 }
 
@@ -57,7 +57,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransactions = [];
-
+  bool _showChart = false;
   void _addNewTransaction(String txTitle, double txAmount, DateTime txDate) {
     final newTx = Transaction(
       title: txTitle,
@@ -101,6 +101,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandScaped = mediaQuery.orientation == Orientation.landscape;
     final appBar = AppBar(
       title: Text('Expense Tracker'),
       actions: <Widget>[
@@ -110,6 +112,23 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
+
+    final txListWidget = Container(
+      height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              mediaQuery.padding.top) *
+          0.7,
+      child: TransactionList(_userTransactions, _deleteTransaction),
+    );
+
+    final txChartWidget = Container(
+      height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              mediaQuery.padding.top) *
+          0.7,
+      child: Chart(_recentTransaction),
+    );
+
     return Scaffold(
       appBar: appBar,
       body: SingleChildScrollView(
@@ -117,20 +136,39 @@ class _MyHomePageState extends State<MyHomePage> {
           // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Container(
-              height: (MediaQuery.of(context).size.height -
-                      appBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.3,
-              child: Chart(_recentTransaction),
-            ),
-            Container(
-              height: (MediaQuery.of(context).size.height -
-                      appBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.7,
-              child: TransactionList(_userTransactions, _deleteTransaction),
-            ),
+            if (isLandScaped)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text('Show Chart'),
+                  // Switch.adaptive() fits with both iOS & Android UI
+                  Switch.adaptive(
+                    value: _showChart,
+                    onChanged: (val) {
+                      setState(() {
+                        _showChart = val;
+                      });
+                    },
+                  )
+                ],
+              ),
+            if (isLandScaped) _showChart ? txChartWidget : txListWidget,
+            if (!isLandScaped)
+              Container(
+                height: (mediaQuery.size.height -
+                        appBar.preferredSize.height -
+                        mediaQuery.padding.top) *
+                    0.3,
+                child: Chart(_recentTransaction),
+              ),
+            if (!isLandScaped)
+              Container(
+                height: (mediaQuery.size.height -
+                        appBar.preferredSize.height -
+                        mediaQuery.padding.top) *
+                    0.7,
+                child: TransactionList(_userTransactions, _deleteTransaction),
+              ),
           ],
         ),
       ),
